@@ -29,7 +29,7 @@ const authList = [
         key: 'measure-update'
       }
     ]
-  }, 
+  },
   {
     title: '备件采购',
     key: 'spare-part',

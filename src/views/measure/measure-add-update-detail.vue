@@ -1,6 +1,6 @@
 <template>
   <div>
-    spare-part
+    add
   </div>
 </template>
 <script>

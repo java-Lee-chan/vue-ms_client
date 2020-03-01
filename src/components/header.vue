@@ -16,7 +16,6 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import linkButton from './linkButton.vue';
 
 export default {
   data() {
@@ -37,7 +36,6 @@ export default {
       });
     }
   },
-  components: { linkButton }
 }
 </script>
 <style lang="less" scoped>

@@ -20,7 +20,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import leftNav from '../../components/leftNav.vue';
+import leftNav from '../../components/left-nav.vue';
 import adminHeader from '../../components/header.vue';
 
 export default {
@@ -32,14 +32,6 @@ export default {
   components: { leftNav, adminHeader },
   computed: {
     ...mapState(['user'])
-  },
-  watch: {
-    // eslint-disable-next-line
-    '$store.state.user': function () {
-      if (!this.user || !this.user._id) {
-        this.$router.push('/login')
-      }
-    }
   }
 };
 </script>

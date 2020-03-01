@@ -17,15 +17,18 @@
 </template>
 <script>
 import menuList from '../config/menuConfig';
-import navagationItem from './navigationItem.vue';
+import navagationItem from './navigation-item.vue';
 
 export default {
   data() {
     return {
-      menuList
+      menuList: []
     }
   },
-  components: { navagationItem }
+  components: { navagationItem },
+  mounted() {
+    this.menuList = menuList;
+  }
 }
 </script>
 <style lang="less" scoped>
@@ -61,7 +64,7 @@ export default {
   }
   .el-menu {
     border-right: 1px solid #091B2D;
-    padding-top: 5px;
+    padding-top: 3px;
     padding-bottom: 5px;
   }
 

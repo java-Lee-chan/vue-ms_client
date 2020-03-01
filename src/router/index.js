@@ -4,9 +4,12 @@ import Login from '../views/login/login.vue';
 import Admin from '../views/admin/admin.vue';
 import Home from '../views/home/home.vue';
 import Measure from '../views/measure/measure.vue';
-import SparePart from '../views/spare-part/sparePart.vue';
+import MeasureHome from '../views/measure/measure-home.vue';
+import MeasureUpload from '../views/measure/measure-upload.vue';
+import MeasureAddUpdate from '../views/measure/measure-add-update-detail.vue';
+import SparePart from '../views/spare-part/spare-part.vue';
 import Energy from '../views/energy/energy.vue';
-import BaseData from '../views/energy/energy-base-data/baseData.vue';
+import BaseData from '../views/energy/energy-base-data/base-data.vue';
 import Report from '../views/energy/energy-report/report.vue';
 import Settings from '../views/energy/energy-setttings/settings.vue';
 import User from '../views/user/user.vue';
@@ -20,6 +23,7 @@ const router = new VueRouter({
     {
       path: '/',
       component: Admin,
+      redirect: '/home',
       children: [
         {
           path: 'home',
@@ -27,7 +31,22 @@ const router = new VueRouter({
         },
         {
           path: 'measure',
-          component: Measure
+          component: Measure,
+          redirect: '/measure/home',
+          children: [
+            {
+              path: 'home',
+              component: MeasureHome
+            },
+            {
+              path: 'upload',
+              component: MeasureUpload
+            },
+            {
+              path: 'addupdate',
+              component: MeasureAddUpdate
+            }
+          ]
         },
         {
           path: 'spare-part',
@@ -73,7 +92,7 @@ function setTitle(list, key) {
     // debugger;
     if (item.children && item.children.length > 0) {
       setTitle(item.children, key);
-    } else if (item.key === key) {
+    } else if (key.indexOf(item.key) === 0) {
       router.app.$options.store.dispatch('setHeadTitle', item.title);
     }
   });
@@ -81,7 +100,17 @@ function setTitle(list, key) {
 
 router.beforeEach((to, from, next) => {
   setTitle(menuList, to.path);
-  next();
+  const { state } = router.app.$options.store;
+  if (state.user && state.user._id) {
+    next();
+  } else if (to.path === '/login') {
+    next();
+  } else {
+    next({
+      path: '/login',
+      replace: true
+    });
+  }
 });
 
 export default router;

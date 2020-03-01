@@ -80,11 +80,6 @@ export default {
   computed: {
     ...mapState(['user', 'msg'])
   },
-  mounted() {
-    if (this.user && this.user._id) {
-      this.$router.push('/');
-    }
-  },
   methods: {
     ...mapActions(['login']),
     submitForm(formName) {

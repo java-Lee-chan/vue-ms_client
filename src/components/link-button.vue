@@ -1,5 +1,6 @@
 <script>
 export default {
+  name: 'link-button',
   render(h) {
     // 将 this.$slots 格式化为数组，因为 h 函数第三个参数是子节点，是一个数组
     const slots = Object.keys(this.$slots)
