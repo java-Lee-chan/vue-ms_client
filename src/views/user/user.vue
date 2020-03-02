@@ -1,10 +1,10 @@
 <template>
   <el-card class="box-card">
     <div slot="header" class="card-header">
-      <own-button @click="isShow=true"><i class="el-icon-plus"></i>创建用户</own-button>
+      <own-button @click="handleAdd"><i class="el-icon-plus"></i>创建用户</own-button>
     </div>
     <el-table
-      :data="tableData"
+      :data="tableData.slice((currentPage - 1) * pagesize, currentPage*pagesize)"
       border
     >
       <el-table-column
@@ -18,6 +18,7 @@
         :property="item.prop"
         :key="item.prop"
         :label="item.label"
+        :formatter="item.formatter"
       >
       </el-table-column>
       <el-table-column label="操作">
@@ -37,19 +38,62 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog title="添加用户" width="520px" :visible.sync="isShow" @open="handleOpen">
-      <user-form :roles="roles" :user="user" @setForm="setForm"></user-form>
+    <div class="page-container">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :page-sizes="[10, 20, 30, 50, 100]"
+        :total="total"
+        :hide-on-single-page="true"
+        @current-change="(currentPage) => this.currentPage = currentPage">
+      </el-pagination>
+    </div>
+    <el-dialog
+      :title="dialogTitle"
+      width="520px"
+      :visible.sync="show"
+    >
+      <el-form
+        :model="form"
+        :rules="rules"
+        label-width="100px"
+        ref="form"
+        size="small"
+        style="padding: 0 60px 0 30px;"
+      >
+        <el-form-item prop="username" class="transparentIcon" label="用户名:">
+          <el-input v-model="form.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item v-if="dialogTitle === '添加用户'" prop="password" label="密码:">
+          <el-input v-model="form.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="email" class="transparentIcon" label="邮箱:">
+          <el-input v-model="form.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="phone" class="transparentIcon" label="电话:">
+          <el-input v-model="form.phone" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="role_id" label="所属角色:">
+          <el-select v-model="form.role_id" placeholder="请选择角色" style="width: 100%">
+            <el-option v-for="role in roles"
+              :key="role._id"
+              :value="role._id"
+              :label="role.name"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
       <div slot="footer">
         <el-button @click="handleCancel">取 消</el-button>
-        <own-button @click="addOrUpdateUser">确 定</own-button>
+        <own-button @click="handleAddOrUpdateUser('form')">确 定</own-button>
       </div>
     </el-dialog>
   </el-card>
 </template>
 <script>
-import { mapActions } from 'vuex';
-import { reqGetUsers, reqDeleteUser } from '../../api';
-import userForm from './user-form.vue';
+import { mapState, mapActions } from 'vuex';
+import { reqGetUsers, reqAddOrUpdate, reqDeleteUser } from '../../api';
+import { formatDate } from '../../utils/dateUtils';
 
 export default {
   data() {
@@ -58,11 +102,39 @@ export default {
       columns: [],
       roleNames: [],
       roles: [],
-      isShow: false,
-      user: {},
+      show: false,
+      dialogTitle: '',
+      rules: {
+        username: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+        ],
+        phone: [
+          { required: true, message: '请输入电话号码', trigger: 'blur' },
+        ],
+        role_id: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+        ],
+      },
+      form: {
+        username: '',
+        password: '',
+        email: '',
+        phone: '',
+        role_id: '',
+      },
+      pagesize: 10,
+      currentPage: 1
     }
   },
-  components: { userForm },
+  computed: {
+    ...mapState(['user'])
+  },
   beforeMount() {
     this.initColumns();
   },
@@ -88,12 +160,14 @@ export default {
         {
           label: '注册时间',
           prop: 'create_time',
-          // render: formatDate
+          formatter(row) {
+            return formatDate(row.create_time);
+          }
         },
         {
           label: '所属角色',
           prop: 'role_id',
-          // render: (role_id) => this.roleNames[role_id]
+          formatter: (row) => (this.roleNames[row.role_id])
         },
       ]
     },
@@ -103,6 +177,7 @@ export default {
         const { users, roles } = result.data;
         this.initRoleNames(roles);
         this.tableData = users;
+        this.total = users.length;
         this.roles = roles;
       } else {
         this.$message.error(result.msg);
@@ -116,20 +191,35 @@ export default {
       }, {});
       this.roleNames = roleNames;
     },
-    handleUpdate(user) {
-      this.user = user;
-      this.isShow = true;
+    // 添加用户
+    handleAdd() {
+      this.show = true;
+      this.dialogTitle = '添加用户';
+      this.form = {
+        username: '',
+        password: '',
+        email: '',
+        phone: '',
+        role_id: '',
+      };
     },
-    handleDelete(user) {
-      this.$confirm(`确定删除${user.username}吗`, '提示', {
+    // 编辑用户
+    handleUpdate(user) {
+      this.show = true;
+      this.dialogTitle = '修改用户';
+      this.form = JSON.parse(JSON.stringify(user));
+    },
+    // 删除用户
+    handleDelete(currentUser) {
+      this.$confirm(`确定删除${currentUser.username}吗`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        const result = await reqDeleteUser(user._id);
+        const result = await reqDeleteUser(currentUser._id);
         if (result.status === 0) {
-          if (user._id === this.props.user._id) {
-            this.$message.success('当前用户被删除请重新登录', 1);
+          if (currentUser._id === this.user._id) {
+            this.$message.success('当前用户被删除请重新登录');
             this.logout();
           } else {
             this.$message.success('删除用户成功');
@@ -140,25 +230,34 @@ export default {
         }
       });
     },
-    // handleOpen() {
-    //   this.$nextTick(() => {
-    //     if (this.refForm) {
-    //       console.log(222);
-    //       this.refForm.resetFields();
-    //     }
-    //   });
-    // },
-    // handleCancel() {
-    //   this.isShow = false;
-    // },
-    // addOrUpdateUser() {
-
-    // },
-    // setForm(form, refForm) {
-    //   this.form = form;
-    //   this.refForm = refForm;
-    //   console.log(111);
-    // }
+    handleCancel() {
+      this.show = false;
+    },
+    handleAddOrUpdateUser(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          console.log('submit!');
+          this.show = false;
+          const newUser = this.form;
+          const result = await reqAddOrUpdate(newUser);
+          if (result.status === 0) {
+            // 3. 更新列表显示
+            if (newUser._id === this.user._id) {
+              this.$message.success('修改当前用户的信息后需重新登录');
+              this.logout();
+            } else {
+              this.$message.success(`${this.dialogTitle}成功`);
+              this.getUsers();
+              this.isShow = false;
+            }
+          } else {
+            this.$message.error(result.msg);
+          }
+        } else {
+          return false;
+        }
+      });
+    }
   }
 }
 </script>
@@ -167,6 +266,10 @@ export default {
   min-height: 100%;
   .el-card__header {
     height: 64px;
+  }
+  .page-container {
+    text-align: right;
+    margin-top: 20px;
   }
 }
 </style>

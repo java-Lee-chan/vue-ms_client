@@ -32,6 +32,14 @@ export default {
   components: { leftNav, adminHeader },
   computed: {
     ...mapState(['user'])
+  },
+  watch: {
+    // eslint-disable-next-line
+    '$store.state.user': function (user) {
+      if (!user) {
+        this.$router.replace('/login');
+      }
+    }
   }
 };
 </script>

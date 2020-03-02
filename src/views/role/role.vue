@@ -22,7 +22,7 @@
       </el-aside>
       <el-main>
         <!-- 要在子组件的 created 生命周期中使用 menus，因为是异步的，所以最好等获取到 menus 再渲染子组件 -->
-        <role-content v-if="role.menus" :role="role"></role-content>
+        <role-content v-if="flag" :role="role"></role-content>
       </el-main>
     </el-container>
     <el-dialog title="添加角色" width="520px" :visible.sync="isShowAdd">
@@ -55,6 +55,7 @@ export default {
       roles: [],
       role: {},
       isShowAdd: false,
+      flag: false,
       rules: {
         name: [
           { required: true, message: '请输入角色名称', trigger: 'blur' },
@@ -75,6 +76,7 @@ export default {
     async getRoles() {
       const result = await reqGetRoles();
       if (result.status === 0) {
+        this.flag = true;
         this.roles = result.data;
         this.role = this.roles[0] || {};
       } else {
