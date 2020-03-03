@@ -1,7 +1,7 @@
 <template>
   <el-card class="box-card">
     <div slot="header" class="card-header">
-      <own-button @click="handleAdd"><i class="el-icon-plus"></i>创建用户</own-button>
+      <own-button @click="handleShowAdd"><i class="el-icon-plus"></i>创建用户</own-button>
     </div>
     <el-table
       :data="tableData.slice((currentPage - 1) * pagesize, currentPage*pagesize)"
@@ -25,13 +25,13 @@
         <template slot-scope="scope">
           <link-button
             size="mini"
-            @click="handleUpdate(scope.row)"
+            @click="handleShowUpdate(scope.row)"
           >
             修改
           </link-button>
             <link-button
               size="mini"
-              @click="handleDelete(scope.row)"
+              @click="handleUserDelete(scope.row)"
             >
               删除
             </link-button>
@@ -85,7 +85,7 @@
       </el-form>
       <div slot="footer">
         <el-button @click="handleCancel">取 消</el-button>
-        <own-button @click="handleAddOrUpdateUser('form')">确 定</own-button>
+        <own-button @click="handleUserAddOrUpdate('form')">确 定</own-button>
       </div>
     </el-dialog>
   </el-card>
@@ -97,25 +97,54 @@ import { formatDate } from '../../utils/dateUtils';
 
 export default {
   data() {
+    const validateNameOrPwd = (rule, value, callback) => {
+      if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+        const type = rule.field === 'username' ? '用户名' : '密码';
+        callback(`${type}必须由英文、数字或下划线组成`);
+      } else {
+        callback();
+      }
+    }
+    const validateEmail = (rule, value, callback) => {
+      if (!/^\w+@[a-z0-9]+\.[a-z]{2,4}$/.test(value)) {
+        callback('请输入正确的邮箱');
+      } else {
+        callback();
+      }
+    }
+    const validatePhone = (rule, value, callback) => {
+      if (!/^1\d{10}$/.test(value)) {
+        callback('请输入正确的手机号');
+      } else {
+        callback();
+      }
+    }
     return {
       tableData: [],
       columns: [],
       roleNames: [],
       roles: [],
+      total: 0,
       show: false,
       dialogTitle: '',
       rules: {
         username: [
           { required: true, message: '请输入角色名称', trigger: 'blur' },
+          { min: 4, max: 12, message: '用户名在4到12位之间', trigger: 'blur' },
+          { validate: validateNameOrPwd, trigger: 'blur' }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 4, max: 12, message: '密码在4到12位之间', trigger: 'blur' },
+          { validate: validateNameOrPwd, trigger: 'blur' }
         ],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validate: validateEmail, trigger: 'blur' }
         ],
         phone: [
           { required: true, message: '请输入电话号码', trigger: 'blur' },
+          { validate: validatePhone, trigger: 'blur' }
         ],
         role_id: [
           { required: true, message: '请输入角色名称', trigger: 'blur' },
@@ -192,7 +221,7 @@ export default {
       this.roleNames = roleNames;
     },
     // 添加用户
-    handleAdd() {
+    handleShowAdd() {
       this.show = true;
       this.dialogTitle = '添加用户';
       this.form = {
@@ -204,13 +233,13 @@ export default {
       };
     },
     // 编辑用户
-    handleUpdate(user) {
+    handleShowUpdate(user) {
       this.show = true;
       this.dialogTitle = '修改用户';
       this.form = JSON.parse(JSON.stringify(user));
     },
     // 删除用户
-    handleDelete(currentUser) {
+    handleUserDelete(currentUser) {
       this.$confirm(`确定删除${currentUser.username}吗`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -233,7 +262,7 @@ export default {
     handleCancel() {
       this.show = false;
     },
-    handleAddOrUpdateUser(formName) {
+    handleUserAddOrUpdate(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           console.log('submit!');

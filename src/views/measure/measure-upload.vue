@@ -2,7 +2,7 @@
   <el-card class="box-card">
     <div slot="header" class="card-header">
       <span>
-        <linkButton class="back"><i class="el-icon-back"></i></linkButton>
+        <link-button class="back"><i class="el-icon-back"></i></link-button>
         <span>返回</span>
       </span>
     </div>

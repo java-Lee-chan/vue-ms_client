@@ -8,8 +8,8 @@
       background-color="#091B2D"
       text-color="#646C79"
       active-text-color="#fff"
-      router
-      :default-active="this.$route.path"
+      :default-active="defaultActive"
+      @select="setSelection"
     >
       <navagation-item v-for="menu in menuList" :key="menu.key" :item="menu" />
     </el-menu>
@@ -22,12 +22,30 @@ import navagationItem from './navigation-item.vue';
 export default {
   data() {
     return {
-      menuList: []
+      menuList: [],
+      defaultActive: ''
     }
   },
   components: { navagationItem },
-  mounted() {
+  watch: {
+    // eslint-disable-next-line
+    '$route.path': {
+      // eslint-disable-next-line
+      handler: function(value) {
+        const path = value;
+        const newPath = `/${path.split('/')[1]}`;
+        this.defaultActive = (path.indexOf('/energy') === 0) ? path : newPath;
+      },
+      immediate: true
+    }
+  },
+  beforeMount() {
     this.menuList = menuList;
+  },
+  methods: {
+    setSelection(index) {
+      this.$router.push(index);
+    }
   }
 }
 </script>
