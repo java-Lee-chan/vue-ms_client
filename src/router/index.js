@@ -8,6 +8,9 @@ import MeasureHome from '../views/measure/measure-home.vue';
 import MeasureUpload from '../views/measure/measure-upload.vue';
 import MeasureAddUpdate from '../views/measure/measure-add-update-detail.vue';
 import SparePart from '../views/spare-part/spare-part.vue';
+import SparePartHome from '../views/spare-part/spare-part-home.vue';
+import SparePartUpload from '../views/spare-part/spare-part-upload.vue';
+import SparePartAddUpdate from '../views/spare-part/spare-part-add-update.vue';
 import Energy from '../views/energy/energy.vue';
 import BaseData from '../views/energy/energy-base-data/base-data.vue';
 import Report from '../views/energy/energy-report/report.vue';
@@ -50,7 +53,22 @@ const router = new VueRouter({
         },
         {
           path: 'spare-part',
-          component: SparePart
+          component: SparePart,
+          redirect: '/spare-part/home',
+          children: [
+            {
+              path: 'home',
+              component: SparePartHome
+            },
+            {
+              path: 'upload',
+              component: SparePartUpload
+            },
+            {
+              path: 'addupdate',
+              component: SparePartAddUpdate
+            }
+          ]
         },
         {
           path: 'energy',

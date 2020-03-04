@@ -1,5 +1,5 @@
+/* eslint-disable */
 import XLSX from 'xlsx';
-
 
 export default {
   // 读取本地excel文件
@@ -31,7 +31,6 @@ export default {
     }
   }
 }
-
 
 function readWorkbook(workbook){
   const sheetNames = workbook.SheetNames;

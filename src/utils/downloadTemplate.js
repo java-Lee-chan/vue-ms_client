@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {reqDownloadTemplate} from '../api';
 
 // 请求下载excel模板文件

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import axios from 'axios';
 
 // 下载excel模板

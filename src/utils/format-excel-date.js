@@ -1,3 +1,4 @@
+/* eslint-disable */
 // 格式化 excel 中的日期
 export default function formatDate(numb, format) {
   if (numb !== undefined) {

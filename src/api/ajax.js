@@ -1,3 +1,4 @@
+/* eslint-disable */
 import axios from 'axios';
 
 // 用 promise 封装 axios 返回的响应，可直接得到 response.data

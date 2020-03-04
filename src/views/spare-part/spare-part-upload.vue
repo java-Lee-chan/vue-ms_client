@@ -7,9 +7,9 @@
       </span>
     </div>
     <div class="card-content">
-      <div v-if="dataSource.length > 0">
+      <div v-if="spareParts.length > 0">
         <el-table
-          :data="dataSource"
+          :data="spareParts"
           tooltip-effect="dark"
           border
           fit
@@ -42,18 +42,22 @@
   </el-card>
 </template>
 <script>
+import { mapState } from 'vuex';
 import xlsxUtils from '../../utils/xlsxUtils';
 import formatDate from '../../utils/format-excel-date';
-import { measureConstants } from '../../utils/constants';
-import { reqUploadMeasures } from '../../api';
+import { sparePartConstants } from '../../utils/constants';
+import { reqUploadSpareParts } from '../../api';
 import downloadTemplate from '../../utils/downloadTemplate';
 
 export default {
   data() {
     return {
-      dataSource: [],
+      spareParts: [],
       acceptType: '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
     }
+  },
+  computed: {
+    ...mapState(['user'])
   },
   beforeMount() {
     this.initColumns();
@@ -63,111 +67,101 @@ export default {
     initColumns() {
       this.columns = [
         {
-          label: '计量编号',
-          prop: '_id',
+          label: '序号',
+          prop: 'index'
         },
         {
-          label: '器具名称',
+          label: '备件名称',
           prop: 'name',
         },
         {
-          label: '规格型号',
+          label: '型号',
           prop: 'model'
         },
         {
-          label: '出厂编号',
-          prop: 'factory_num'
+          label: '规格',
+          prop: 'specs'
         },
         {
-          label: '制造商',
-          prop: 'manufacturer'
+          label: '品牌',
+          prop: 'brand'
         },
         {
-          label: '检定时间',
-          prop: 'last_time'
+          label: '单价',
+          prop: 'price'
         },
         {
-          label: '有效期至',
-          prop: 'next_time',
+          label: '数量',
+          prop: 'num'
         },
         {
-          label: '检定周期',
-          prop: 'duration'
+          label: '单位',
+          prop: 'unit'
         },
         {
-          label: 'ABC管理',
-          prop: 'abc'
-        },
-        {
-          label: '检定结果',
-          prop: 'result'
-        },
-        {
-          label: '使用地点',
-          prop: 'location',
+          label: '总价',
+          prop: 'total'
         },
         {
           label: '用途',
           prop: 'usage'
         },
         {
-          label: '送检类型',
-          prop: 'type'
+          label: '提交日期',
+          prop: 'time'
         },
         {
-          label: '状态',
-          prop: 'status',
+          label: '提交人',
+          prop: 'committer'
         },
-      ];
+      ]
     },
     goBack() {
       this.$router.go(-1);
-      this.dataSource = [];
+      this.spareParts = [];
     },
     handleExport() {
-      downloadTemplate('measure');
+      downloadTemplate('spare-part');
     },
     // 文件读取后处理文件内容
     handleChange(e) {
       xlsxUtils.readWorkbookFromLocalFile(e.target.files[0], (json) => {
-        const measures = json.reduce((pre, item) => {
-          const measure = {};
-          Object.keys(measureConstants).forEach((key) => {
-            if (key === 'last_time' || key === 'next_time') {
-              if (key === 'next_time' && item['检定周期'] === '长期') {
-                measure[key] = '-';
-              } else {
-                if (/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/.test(item[measureConstants[key]])) {
-                  measure[key] = item[measureConstants[key]];
-                }
-                if (typeof (item[measureConstants[key]]) === 'number') {
-                  measure[key] = formatDate(item[measureConstants[key]], '/');
-                }
+        // console.log(json);
+        const spareParts = json.reduce((pre, item, index) => {
+          const sparePart = {};
+          Object.keys(sparePartConstants).forEach((key) => {
+            if (key === 'time') {
+              if (typeof (item[sparePartConstants[key]]) === 'number') {
+                sparePart[key] = formatDate(item[sparePartConstants[key]], '/');
+              } else if (/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/.test(item[sparePartConstants[key]])) {
+                sparePart[key] = item[sparePartConstants[key]];
               }
             } else {
-              measure[key] = item[measureConstants[key]];
+              sparePart[key] = item[sparePartConstants[key]];
             }
           });
-          pre.push(measure);
+          sparePart.committer = sparePart.committer ? sparePart.committer : this.user.username;
+          sparePart.key = index;
+          pre.push(sparePart);
           return pre;
         }, []);
-        this.dataSource = measures;
+        this.spareParts = spareParts;
       });
     },
     async handleUpload() {
-      const { dataSource } = this;
+      const { spareParts } = this;
 
-      const result = await reqUploadMeasures(dataSource);
+      const result = await reqUploadSpareParts(spareParts);
       if (result.status === 0) {
-        this.$message.success('上传测量仪器成功');
-        this.dataSource = [];
-        this.$router.replace('/measure');
+        this.$message.success('上传备件采购单成功');
+        this.spareParts = [];
+        this.$router.replace('/spare-part');
       } else {
         this.$message.error(result.msg);
       }
     },
     handleCancel() {
-      this.dataSource = [];
+      this.spareParts = [];
     }
   }
 }

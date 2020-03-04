@@ -1,3 +1,4 @@
+/* eslint-disable */
 import ajax from './ajax';
 
 import downloadExcel from './download-excel';
