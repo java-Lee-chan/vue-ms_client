@@ -3,7 +3,7 @@
     <div slot="header" class="card-header">
       <span>请选择需查询的提交时间:</span>&nbsp;&nbsp;
       <el-date-picker
-        v-model="timerRange"
+        v-model="timeRange"
         @change="handleSparePartTimeSearch"
         value-format="yyyy/MM/dd"
         type="daterange"
@@ -29,10 +29,10 @@
       </span>
     </div>
     <el-table
-      ref="multipleTable"
       :data="spareParts"
       tooltip-effect="dark"
       border
+      fit
       style="width: 100%"
       @selection-change="handleSelectionChange"
     >
@@ -57,30 +57,38 @@
       </el-table-column>
       <el-table-column label="操作" align="center">
       <template slot-scope="scope">
-        <own-button
+        <link-button
           size="mini"
-          @click="handleEdit(scope.$index, scope.row)">编辑</own-button>
+          @click="handleEdit(scope.$index, scope.row)">编辑</link-button>
       </template>
     </el-table-column>
     </el-table>
   </el-card>
 </template>
 <script>
-// import { reqGetSpareParts } from '../../api';
+import { mapState } from 'vuex';
+import moment from 'moment';
+import { reqGetSpareParts } from '../../api';
 import xlsxUtils from '../../utils/xlsxUtils';
 import { sparePartConstants } from '../../utils/constants';
 
 export default {
   data() {
     return {
-      timerRange: '',
-      initialSpareParts: [],
+      timeRange: [moment().startOf('month').toDate(), moment().endOf('month').toDate()],
       spareParts: [],
       columns: []
     }
   },
+  computed: {
+    ...mapState(['user'])
+  },
   beforeMount() {
     this.initColumns();
+  },
+  mounted() {
+    const { timeRange } = this;
+    this.getSpareParts(timeRange);
   },
   methods: {
     // 初始化表格结构
@@ -136,6 +144,18 @@ export default {
         }
       ];
     },
+    async getSpareParts(timeRange) {
+      const start = moment(timeRange[0]).format('YYYY/MM/DD');
+      const end = moment(timeRange[1]).format('YYYY/MM/DD');
+      const committer = this.user.username;
+      const result = await reqGetSpareParts(start, end, committer);
+      if (result.status === 0) {
+        const spareParts = result.data;
+        this.spareParts = spareParts;
+      } else {
+        this.$message.error(result.msg);
+      }
+    },
     handleExport() {
       const { spareParts } = this;
       const results = spareParts.reduce((pre, item, index) => {
@@ -153,7 +173,11 @@ export default {
 
     },
     handleSparePartTimeSearch(value) {
-      console.log(value);
+      if (value) {
+        this.getSpareParts(value);
+      } else {
+        this.spareParts = [];
+      }
     }
   }
 }

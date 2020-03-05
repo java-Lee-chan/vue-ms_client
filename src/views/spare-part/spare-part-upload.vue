@@ -30,8 +30,10 @@
           >
           </el-table-column>
         </el-table>
-        <own-button @click="handleUpload">确认无误，点击上传</own-button>&nbsp;&nbsp;
-        <own-button @click="handleCancel">撤销</own-button>
+        <div style="margin-top: 10px">
+          <own-button @click="handleUpload">确认无误，点击上传</own-button>&nbsp;&nbsp;
+          <own-button @click="handleCancel">撤销</own-button>
+        </div>
       </div>
       <div v-else>
         <span  style="font-weight: bold">请根据模板文件的格式进行上传</span>

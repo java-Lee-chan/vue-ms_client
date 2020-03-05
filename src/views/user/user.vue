@@ -61,16 +61,16 @@
         size="small"
         style="padding: 0 60px 0 30px;"
       >
-        <el-form-item prop="username" class="transparentIcon" label="用户名:">
+        <el-form-item prop="username" label="用户名:">
           <el-input v-model="form.username" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item v-if="dialogTitle === '添加用户'" prop="password" label="密码:">
           <el-input v-model="form.password" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="email" class="transparentIcon" label="邮箱:">
+        <el-form-item prop="email" label="邮箱:">
           <el-input v-model="form.email" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="phone" class="transparentIcon" label="电话:">
+        <el-form-item prop="phone" label="电话:">
           <el-input v-model="form.phone" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item prop="role_id" label="所属角色:">
