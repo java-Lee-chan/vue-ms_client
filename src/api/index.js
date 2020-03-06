@@ -14,6 +14,9 @@ export const reqAddMeasure = (measure) => ajax(BASE + '/manage/measure/add', mea
 // 获取测量仪器列表
 export const reqGetMeasures = () => ajax(BASE + '/manage/measure/list');
 
+// 根据id获取一个测量仪器
+export const reqGetMeasure = (_id) => ajax(BASE + '/manage/measure/get', {_id}, 'POST')
+
 // 获取最近一段时间到期的测量仪器列表
 export const reqGetRecentMeasures = () => ajax(BASE + '/manage/measure/recent/list');
 
@@ -37,6 +40,9 @@ export const reqGetSpareParts = (start, end, committer) => ajax(BASE + '/manage/
 
 // 新增备件
 export const reqAddSparePart = (sparePart) => ajax(BASE + '/manage/spare-part/add', sparePart, 'POST');
+
+// 根据id获取一个备件
+export const reqGetSparePart = (_id) => ajax(BASE + '/manage/spare-part/get', {_id}, 'POST')
 
 // 更新备件
 export const reqUpdateSparePart= (sparePart) => ajax(BASE + '/manage/spare-part/update', sparePart, 'POST');

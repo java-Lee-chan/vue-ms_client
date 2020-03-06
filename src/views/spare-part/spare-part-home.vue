@@ -22,7 +22,7 @@
           导出
         </own-button>
         <own-button><i class="el-icon-plus"></i>批量通过</own-button>
-        <own-button @click="$router.push('/spare-part/addupdate')">
+        <own-button @click="handleAdd">
           <i class="el-icon-plus"></i>
           申购
         </own-button>
@@ -59,7 +59,7 @@
       <template slot-scope="scope">
         <link-button
           size="mini"
-          @click="handleEdit(scope.$index, scope.row)">编辑</link-button>
+          @click="handleUpdate(scope.$index, scope.row)">编辑</link-button>
       </template>
     </el-table-column>
     </el-table>
@@ -178,6 +178,19 @@ export default {
       } else {
         this.spareParts = [];
       }
+    },
+    handleAdd() {
+      const query = {
+        type: 'add'
+      };
+      this.$router.push({ name: 'sparePart-addupdate', query });
+    },
+    handleUpdate(index, sparePart) {
+      const query = {
+        type: 'update',
+        _id: sparePart._id
+      };
+      this.$router.push({ name: 'sparePart-addupdate', query });
     }
   }
 }

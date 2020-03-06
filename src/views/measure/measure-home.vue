@@ -28,7 +28,7 @@
           上传
         </own-button>
         <own-button @click="handleExport"><i class="el-icon-download"></i>导出</own-button>
-        <own-button @click="$router.push('/measure/addupdate')">
+        <own-button @click="handleAdd">
           <i class="el-icon-plus"></i>
           添加
         </own-button>
@@ -65,14 +65,14 @@
         <template slot-scope="scope">
           <link-button
             size="mini"
-            @click="handleEdit(scope.$index, scope.row)"
+            @click="handleUpdate(scope.$index, scope.row)"
           >
             编辑
           </link-button>
           <link-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)"
+            @click="handleCheck(scope.$index, scope.row)"
           >
             查看
           </link-button>
@@ -262,16 +262,26 @@ export default {
     changePage(currentPage) {
       this.currentPage = currentPage;
     },
-    // filterChange(filters) {
-    //   console.log(filters);
-    //   const key = Object.keys(filters)[0];
-    //   const values = filters[key];
-    //   const { measures } = this;
-    //   this.searchMeasures = measures.filter((measure) => (
-    //     measure[key] && measure[key].indexOf(values) !== -1
-    //   ));
-    //   // console.log(this.searchMeasures);
-    // }
+    handleAdd() {
+      const query = {
+        type: 'add'
+      };
+      this.$router.push({ name: 'measure-addupdate', query });
+    },
+    handleUpdate(index, measure) {
+      const query = {
+        type: 'update',
+        _id: measure._id
+      };
+      this.$router.push({ name: 'measure-addupdate', query });
+    },
+    handleCheck(index, measure) {
+      const query = {
+        type: 'check',
+        _id: measure._id
+      };
+      this.$router.push({ name: 'measure-addupdate', query });
+    }
   }
 }
 </script>

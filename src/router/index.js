@@ -46,6 +46,7 @@ const router = new VueRouter({
               component: MeasureUpload
             },
             {
+              name: 'measure-addupdate',
               path: 'addupdate',
               component: MeasureAddUpdate
             }
@@ -65,6 +66,7 @@ const router = new VueRouter({
               component: SparePartUpload
             },
             {
+              name: 'sparePart-addupdate',
               path: 'addupdate',
               component: SparePartAddUpdate
             }
