@@ -21,7 +21,10 @@
           <i class="el-icon-download"></i>
           导出
         </own-button>
-        <own-button><i class="el-icon-plus"></i>批量通过</own-button>
+        <own-button @click="handleShowConfirm">
+          <i class="el-icon-plus"></i>
+          批量通过
+        </own-button>
         <own-button @click="handleAdd">
           <i class="el-icon-plus"></i>
           申购
@@ -29,8 +32,10 @@
       </span>
     </div>
     <el-table
+      ref="multipleTable"
       :data="spareParts"
       tooltip-effect="dark"
+      :row-key="getRowKeys"
       border
       fit
       style="width: 100%"
@@ -38,6 +43,7 @@
     >
       <el-table-column
         type="selection"
+        :reserve-selection="true"
         align="center"
         width="55">
       </el-table-column>
@@ -56,19 +62,30 @@
       >
       </el-table-column>
       <el-table-column label="操作" align="center">
-      <template slot-scope="scope">
-        <link-button
-          size="mini"
-          @click="handleUpdate(scope.$index, scope.row)">编辑</link-button>
-      </template>
-    </el-table-column>
+        <template slot-scope="scope">
+          <link-button
+            size="mini"
+            @click="handleUpdate(scope.$index, scope.row)">编辑</link-button>
+        </template>
+      </el-table-column>
     </el-table>
+    <el-dialog
+      title="批量确认"
+      width="520px"
+      :visible.sync="isShowConfirm"
+    >
+      <span>选取的备件同意本月申购吗?</span>
+      <div slot="footer">
+        <el-button @click="handleCancel">取 消</el-button>
+        <own-button @click="handleConfirm">确 定</own-button>
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 <script>
 import { mapState } from 'vuex';
 import moment from 'moment';
-import { reqGetSpareParts } from '../../api';
+import { reqGetSpareParts, reqConfirmSpareParts } from '../../api';
 import xlsxUtils from '../../utils/xlsxUtils';
 import { sparePartConstants } from '../../utils/constants';
 
@@ -77,7 +94,9 @@ export default {
     return {
       timeRange: [moment().startOf('month').toDate(), moment().endOf('month').toDate()],
       spareParts: [],
-      columns: []
+      columns: [],
+      isShowConfirm: false,
+      selectedRows: []
     }
   },
   computed: {
@@ -169,9 +188,6 @@ export default {
       }, []);
       xlsxUtils.exportWorkbookFromServerFile(results, 'spare-part');
     },
-    handleSelectionChange() {
-
-    },
     handleSparePartTimeSearch(value) {
       if (value) {
         this.getSpareParts(value);
@@ -191,6 +207,34 @@ export default {
         _id: sparePart._id
       };
       this.$router.push({ name: 'sparePart-addupdate', query });
+    },
+    getRowKeys(row) {
+      return row._id
+    },
+    handleSelectionChange(val) {
+      this.selectedRows = val;
+    },
+    handleShowConfirm() {
+      if (this.selectedRows.length > 0) {
+        this.isShowConfirm = true;
+      } else {
+        this.$message.error('请选中至少一个备件');
+      }
+    },
+    handleCancel() {
+      this.isShowConfirm = false;
+    },
+    async handleConfirm() {
+      const { selectedRows, timeRange } = this;
+      const result = await reqConfirmSpareParts(selectedRows);
+      if (result.status === 0) {
+        this.isShowConfirm = false;
+        this.selectedRows = [];
+        this.$refs.multipleTable.clearSelection();
+        this.getSpareParts(timeRange);
+      } else {
+        this.$message.error(result.msg);
+      }
     }
   }
 }

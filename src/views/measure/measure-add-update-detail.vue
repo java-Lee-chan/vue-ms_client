@@ -137,10 +137,10 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col v-if="type !== 'check'" :xs="{offset: 10}" :sm="{offset: 15}">
-          <el-form-item>
-            <own-button @click="onSubmit('measureForm')">提交</own-button>
-          </el-form-item>
+      </el-row>
+      <el-row>
+        <el-col v-if="type !== 'check'" :offset="20">
+          <own-button @click="onSubmit('measureForm')">提交</own-button>
         </el-col>
       </el-row>
     </el-form>

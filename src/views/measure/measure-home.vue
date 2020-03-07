@@ -32,13 +32,15 @@
           <i class="el-icon-plus"></i>
           添加
         </own-button>
-        <own-button><i class="el-icon-plus"></i>批量确认</own-button>
+        <own-button @click="handleShowConfirm"><i class="el-icon-plus"></i>批量确认</own-button>
       </span>
     </div>
     <el-table
       ref="multipleTable"
       :data="searchMeasures.slice((currentPage - 1) * pagesize, currentPage*pagesize)"
+      @selection-change="handleSelectionChange"
       tooltip-effect="dark"
+      :row-key="getRowKeys"
       border
       fit
       max-height="1000"
@@ -47,6 +49,7 @@
       <el-table-column
         type="selection"
         align="center"
+        :reserve-selection="true"
         width="55">
       </el-table-column>
       <el-table-column
@@ -89,10 +92,27 @@
         @current-change="changePage">
       </el-pagination>
     </div>
+    <el-dialog
+      title="批量确认"
+      width="520px"
+      :visible.sync="isShowConfirm"
+    >
+      <el-form>
+        <el-form-item label="选择检定日期:">
+          <el-date-picker v-model="confirmTime" value-format="yyyy/MM/dd">
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="handleCancel">取 消</el-button>
+        <own-button @click="handleConfirm">确 定</own-button>
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 <script>
-import { reqGetMeasures } from '../../api';
+import moment from 'moment';
+import { reqGetMeasures, reqConfrimMeasures } from '../../api';
 import xlsxUtils from '../../utils/xlsxUtils';
 import { measureConstants } from '../../utils/constants';
 
@@ -106,7 +126,10 @@ export default {
       searchMeasures: [],
       columns: [],
       pagesize: 10,
-      currentPage: 1
+      currentPage: 1,
+      selectedRows: [],
+      isShowConfirm: false,
+      confirmTime: moment().format('YYYY/MM/DD')
     }
   },
   computed: {
@@ -281,6 +304,58 @@ export default {
         _id: measure._id
       };
       this.$router.push({ name: 'measure-addupdate', query });
+    },
+    handleSelectionChange(val) {
+      this.selectedRows = val;
+    },
+    getRowKeys(row) {
+      return row._id
+    },
+    handleShowConfirm() {
+      if (this.selectedRows.length > 0) {
+        this.isShowConfirm = true;
+      } else {
+        this.$message.error('请选中至少一个测量仪器');
+      }
+    },
+    async handleConfirm() {
+      /* eslint-disable */
+      const { selectedRows, confirmTime } = this;
+      let flag = true;
+      let duration = '';
+      selectedRows.forEach((selectedRow) => {
+        if (selectedRow.duration === '长期') {
+          flag = false;
+          return;
+        } else if (duration === '') {
+          duration = selectedRow.duration;
+        } else if (duration !== selectedRow.duration) {
+          flag = false;
+          return;
+        }
+      });
+      duration = '';
+      if (flag) {
+        selectedRows.forEach((selectedRow) => {
+          selectedRow.last_time = confirmTime;
+          selectedRow.next_time = moment(selectedRow.last_time, 'YYYY/MM/DD').add(parseInt(selectedRow.duration, 0), 'M').subtract(1, 'd').format('YYYY/MM/DD');
+          selectedRow.result = '合格';
+        });
+        const result = await reqConfrimMeasures(selectedRows);
+        if (result.status === 0) {
+          this.isShowConfirm = false;
+          this.selectedRows = [];
+          this.$refs.multipleTable.clearSelection();
+          this.getMeasures();
+        } else {
+          this.$message.error(result.msg);
+        }
+      } else {
+        this.$message.error('请确认选择的计量仪器是否有周期或周期是否相同');
+      }
+    },
+    handleCancel() {
+      this.isShowConfirm = false;
     }
   }
 }

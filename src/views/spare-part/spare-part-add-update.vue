@@ -71,14 +71,12 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
-        <el-col :xs="{offset: 10}" :sm="{offset: 15}">
-          <el-form-item>
-            <own-button @click="onSubmit('sparePartForm')">提交</own-button>
-          </el-form-item>
-        </el-col>
-      </el-row>
     </el-form>
+    <el-row>
+      <el-col :offset="20">
+        <own-button @click="onSubmit('sparePartForm')">提交</own-button>
+      </el-col>
+    </el-row>
   </el-card>
 </template>
 <script>
