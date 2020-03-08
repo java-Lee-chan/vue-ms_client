@@ -25,9 +25,33 @@
         <el-card
           title="下列仪器将在3个月内过期"
           style="height: 100%; overflow: auto;"
+          body-style="padding: 0"
         >
           <div slot="header">
             <span>下列仪器将在3个月内过期</span>
+          </div>
+          <el-table
+            ref="multipleTable"
+            :data="dataSource"
+            style="fontSize: 10px; width: 365px;margin: 0 auto"
+            size="mini"
+          >
+            <el-table-column
+              type="index"
+              label="序号"
+              align="center"
+              width="55">
+            </el-table-column>
+            <el-table-column prop="_id" label="计量编号" width="90">
+            </el-table-column>
+            <el-table-column prop="name" label="器具名称" width="130">
+            </el-table-column>
+            <el-table-column prop="next_time" label="有效期至" width="90">
+            </el-table-column>
+          </el-table>
+          <div style="marginTop: 15px; fontSize: 14px;textAlign: center">
+            <span>{{`...共${this.length}个测量仪器快到期，点击`}}</span>
+            <link-button @click="$router.push('/measure')">跳转到测量仪器界面</link-button>
           </div>
         </el-card>
       </div>
@@ -38,12 +62,14 @@
           <div slot="header">
             <span>本月备件提交情况</span>
           </div>
-          <el-timeline>
+          <el-timeline style="width: 300px; margin: 0 auto">
             <el-timeline-item
               v-for="activity in timeLines"
               :key="activity._id"
+              :hide-timestamp="true"
+              type="success"
               :timestamp="activity.time">
-              {{`${activity.committer}提交申购`}}
+              {{`${activity.committer}在${activity.time}提交申购`}}
             </el-timeline-item>
         </el-timeline>
         </el-card>
@@ -53,7 +79,7 @@
 </template>
 <script>
 import data from '../../utils/energy-data';
-import { reqSparePartTime } from '../../api';
+import { reqSparePartTime, reqGetRecentMeasures } from '../../api';
 
 export default {
   data() {
@@ -66,7 +92,9 @@ export default {
       waterDateList: [],
       waterValueList: [],
       time: '',
+      columns: [],
       dataSource: [],
+      length: 0,
       timeLines: []
     }
   },
@@ -83,6 +111,7 @@ export default {
     this.waterValueList = valueList;
     this.time = time;
     this.drawLine();
+    this.getMeasures();
     this.getTimeLine();
   },
   methods: {
@@ -145,6 +174,16 @@ export default {
           type: 'bar',
           data: valueList
         }]
+      }
+    },
+    async getMeasures() {
+      const result = await reqGetRecentMeasures();
+      if (result.status === 0) {
+        this.length = result.data.length;
+        const dataSource = result.data.sort((a, b) => a.next_time > b.next_time).splice(0, 5);
+        this.dataSource = dataSource;
+      } else {
+        this.$message.error(result.msg);
       }
     },
     async getTimeLine() {
