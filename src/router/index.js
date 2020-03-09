@@ -15,6 +15,7 @@ import Energy from '../views/energy/energy.vue';
 import BaseData from '../views/energy/energy-base-data/base-data.vue';
 import Report from '../views/energy/energy-report/report.vue';
 import Settings from '../views/energy/energy-setttings/settings.vue';
+import MeterSettings from '../views/energy/energy-setttings/meter-settings.vue';
 import User from '../views/user/user.vue';
 import Role from '../views/role/role.vue';
 import menuList from '../config/menuConfig';
@@ -86,7 +87,14 @@ const router = new VueRouter({
             },
             {
               path: 'settings',
-              component: Settings
+              component: Settings,
+              redirect: '/energy/settings/gas',
+              children: [
+                {
+                  path: ':type',
+                  component: MeterSettings
+                }
+              ]
             }
           ]
         },

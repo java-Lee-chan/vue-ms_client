@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-menu :default-active="activeIndex" mode="horizontal" @select="handleSelect">
+    <el-menu :default-active="activeIndex" mode="horizontal" @select="handleSelect" router>
       <el-menu-item index="gas">天然气表配置</el-menu-item>
       <el-menu-item index="elec">电表配置</el-menu-item>
       <el-menu-item index="water">水表配置</el-menu-item>

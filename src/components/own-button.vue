@@ -18,7 +18,7 @@ export default {
   }
 }
 </script>
-<style lang="less" scoped>
+<style lang="less">
 .own-button {
   background-color: #1da57a;
   color: white;
