@@ -5,6 +5,23 @@
         <el-input placeholder="请输入内容" v-model="searchValue" size="medium">
           <own-button slot="append">搜索&nbsp;<i class="el-icon-search"></i></own-button>
         </el-input>
+        <el-table
+          :data="meterLevels"
+          row-key="_id"
+          fit
+          default-expand-all
+          :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+          style="width: 100%;"
+        >
+          <el-table-column
+            v-for="item in columns"
+            :key="item.prop"
+            :label="item.label"
+            :prop="item.prop"
+            :width="item.width"
+          >
+          </el-table-column>
+        </el-table>
       </div>
     </el-aside>
     <el-container class="base-data-right">
@@ -41,6 +58,8 @@
 </template>
 <script>
 import moment from 'moment';
+import { reqGetMeterLevel } from '../../../api';
+import { translateDataToTree } from '../../../utils/translateDataToTree';
 
 export default {
   data() {
@@ -48,8 +67,13 @@ export default {
       searchValue: '',
       duration: 'day',
       type: 'line',
-      timeRange: [moment().toDate(), moment().toDate()]
+      timeRange: [moment().toDate(), moment().toDate()],
+      columns: [],
+      meterLevels: []
     }
+  },
+  beforeMount() {
+    this.initColumns();
   },
   mounted() {
     // eslint-disable-next-line
@@ -59,6 +83,7 @@ export default {
     this.dateList = dateList;
     this.valueList = valueList;
     this.drawLine();
+    this.getMeterLevel();
   },
   methods: {
     drawLine() {
@@ -104,6 +129,28 @@ export default {
     handleTimeRangeChange() {},
     handleTypeChange() {
       this.drawLine();
+    },
+    initColumns() {
+      this.columns = [
+        {
+          label: '名称',
+          prop: 'name',
+        },
+        {
+          label: '类型',
+          prop: 'type',
+          width: '100'
+        }
+      ];
+    },
+    async getMeterLevel() {
+      const result = await reqGetMeterLevel();
+      if (result.status === 0) {
+        const meterLevels = translateDataToTree(result.data);
+        this.meterLevels = meterLevels;
+      } else {
+        this.$message.error(result.msg);
+      }
     }
   }
 }

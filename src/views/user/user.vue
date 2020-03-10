@@ -265,7 +265,6 @@ export default {
     handleUserAddOrUpdate(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          console.log('submit!');
           this.show = false;
           const newUser = this.form;
           const result = await reqAddOrUpdate(newUser);

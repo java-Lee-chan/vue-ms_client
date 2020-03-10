@@ -7,23 +7,35 @@
     <div class="header-bottom">
       <div class="header-bottom-left">{{title}}</div>
       <div class="header-bottom-right">
-        <span>时间</span>
-        <img src="" alt=""/>
-        <span>天气</span>
+        <span>{{currentTime}}</span>
+        <img :src="dayPictureUrl" alt="weather"/>
+        <span>{{weather}}</span>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { mapState } from 'vuex';
+import { formatDate } from '../utils/dateUtils';
+import { reqWeather } from '../api';
 
 export default {
   data() {
     return {
+      currentTime: formatDate(Date.now()),
+      dayPictureUrl: '',
+      weather: ''
     }
   },
   computed: {
     ...mapState(['user', 'title'])
+  },
+  mounted() {
+    this.getTime();
+    this.getWeather();
+  },
+  beforeDestroy() {
+    clearInterval(this.intervalId);
   },
   methods: {
     logout() {
@@ -34,6 +46,17 @@ export default {
       }).then(() => {
         this.$store.dispatch('logout');
       });
+    },
+    getTime() {
+      this.intervalId = setInterval(() => {
+        const currentTime = formatDate(Date.now());
+        this.currentTime = currentTime;
+      }, 1000);
+    },
+    async getWeather() {
+      const { dayPictureUrl, weather } = await reqWeather('杭州');
+      this.dayPictureUrl = dayPictureUrl;
+      this.weather = weather;
     }
   },
 }

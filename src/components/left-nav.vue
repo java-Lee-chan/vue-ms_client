@@ -34,7 +34,13 @@ export default {
       handler: function(value) {
         const path = value;
         const newPath = `/${path.split('/')[1]}`;
-        this.defaultActive = (path.indexOf('/energy') === 0) ? path : newPath;
+        if (path.indexOf('/energy') !== 0) {
+          this.defaultActive = newPath;
+        } else if (path.indexOf('/energy/settings') === 0) {
+          this.defaultActive = '/energy/settings';
+        } else {
+          this.defaultActive = path;
+        }
       },
       immediate: true
     }
